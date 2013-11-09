@@ -37,4 +37,4 @@ server.listen (process.env.PORT or 8080), ->
         for socket in connectedSockets
           socket.emit 'HI!', doc
 
-  setInterval sendLastSeconds, 1*1000
+  setInterval sendLastSeconds, 1*100
