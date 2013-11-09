@@ -1,19 +1,21 @@
-{ "name": "ghostery-replay"
-, "version": "0.0.1"
-, "description": "replay ghostery data"
-, "author": "Jonathan Dahan <jonathan@jedahan.com>"
-, "dependencies": {
-    "coffee-script": "1.6.x"
-  , "restify": "2.6.x"
-  , "socket.io": "0.9.x"
-  , "stream-csv-enhanced": "*"
-  }
-, "engines": {
+{
+  "name": "ghostery-replay",
+  "version": "0.0.1",
+  "description": "replay ghostery data",
+  "author": "Jonathan Dahan <jonathan@jedahan.com>",
+  "dependencies": {
+    "coffee-script": "1.6.x",
+    "restify": "2.6.x",
+    "socket.io": "0.9.x",
+    "stream-csv-enhanced": "*",
+    "mongolian": "~0.1.18"
+  },
+  "engines": {
     "node": "0.10.x",
-    "npm":  "1.3.x"
-  }
-, "repository": {
-    "type": "git"
-  , "url": "https://github.com/jedahan/ghostery-replay.git"
+    "npm": "1.3.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jedahan/ghostery-replay.git"
   }
 }

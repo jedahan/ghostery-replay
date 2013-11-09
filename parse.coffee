@@ -1,17 +1,77 @@
 fs = require 'fs'
 csv = require 'csv'
 
-redis_url = require("url").parse(process.env.REDIS_URL or 'http://127.0.0.1:6379')
-cache = require("redis").createClient redis_url.port, redis_url.hostname
-cache.auth redis_url.auth.split(":")[1] if redis_url.auth?
+# MongoDB setup
+Mongolian = require 'mongolian'
+mongolian = new Mongolian
+ObjectId = Mongolian.ObjectId
+ObjectId.prototype.toJSON = ObjectId.prototype.toString
+db = mongolian.db 'ghostery-replay'
+chains = db.collection 'chains'
 
-cache.on 'error', (err) -> console.error err
+addChain = (chain) ->
+    [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r] = chain
+    obj = {
+        # milliseconds in the day
+        time24: +new Date(f) % (24*60*60)
+        # Unique identifier for a page load
+        pageLoadId: a
+        # Unique identifier for an element within a single page load (when 0,
+        # this ChainRow represents the page itself.)
+        n: b
+        # The host without subdomains, e.g. bar.co.uk when the host is foo.bar.co.uk
+        domain: c
+        # Host, e.g. foo.bar.co.uk
+        host: d
+        # TLD, e.g. "co.uk"
+        tld: e
+        # Time when this resource was loaded
+        time: f # (int(f) == seconds since epoch)
+        # How long it took to load this resource to load
+        latency: g
+        # Whether this resource loaded asynchronously
+        async: h
+        # MIME Type for this resource
+        mimeType: i
+        # Size of this resource's response body in bytes
+        bodySize: j
+        # Width of this resource (if it was visible on the page); None otherwise
+        width: k
+        # Height of this resource (if it was visible on the page);
+        # None otherwise
+        height: l
+        # Percentage of element visible on page (when viewed with a
+        # 1280x800 resolution); None if it was not visible
+        pctVisible: m
+        # Percentage of the page area that this element occupied; None if it was
+        # not visible
+        pctOfPage: n
+        # Whether this element was considered an advertisement (an ad image,
+        # flash file, etc.); None when it's the page itself (n == 0)
+        consideredAd: o
+        # App ID for this resource if it matched a Ghostery pattern
+        # (match with Analyzer.appNames); None if it didn't
+        appId: p
+        # Whether this resource was loaded (either directly or indirectly)
+        # by a resource that matched a Ghostery pattern; None when it's the page
+        # itself (n == 0)
+        hasIntermediary: q
+        # The 'n' of the resource that spawned this resource; None if unknown
+        # Note that the 'n' matches that index in the slices returned by
+        # ParseChainWith.
+        parentN: r
+    }
+    chains.insert obj, (err, doc) ->
+        console.error err if err
+        console.log 'added!'
 
 csv().from.path(__dirname + "/sample.tsv", {delimiter: "\t", escape: "\""})
-.to.stream(fs.createWriteStream(__dirname + "/sample.out"))
 .transform((row) ->
   row.unshift row.pop()
   row )
-.on("record", (row, index) -> console.log "#" + index + " " + JSON.stringify(row))
+.on("record", (row, index) -> 
+    addChain row
+    console.log "#" + index + " " + JSON.stringify(row)
+)
 .on("close", (count) -> console.log "Number of lines: " + count)
 .on("error", (error) -> console.log error.message)
