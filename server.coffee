@@ -9,13 +9,6 @@ ObjectId.prototype.toJSON = ObjectId.prototype.toString
 db = mongolian.db 'ghostery-replay'
 chains = db.collection 'chains'
 
-sendLastSeconds = (seconds=1) ->
-    millisNow = +new Date % (24*60*60)
-    chains.find({time24: {$gt: millisNow-seconds, $lt: millisNow}}).toArray (err, doc) ->
-        console.error err if err
-        for socket in connectedSockets
-            socket.emit 'HI!', doc
-
 # web sockets
 socketio = require 'socket.io'
 io = socketio.listen server
@@ -23,12 +16,7 @@ connectedSockets = []
 
 io.sockets.on 'connection', (socket) ->
   console.log 'we got a connection'
-  socket.emit 'news', { hello: 'world' }
-  socket.emit 'my other event', (data)->
-    console.log data
   connectedSockets.push socket
-  # fs.createReadStream(path.resolve(__dirname, "sample.tsv.gz")).pipe(zlib.createGunzip()).pipe(source.input)
-
 
 # cors proxy and body parser
 server.use restify.bodyParser()
@@ -39,4 +27,14 @@ server.get /\/*$/, restify.serveStatic directory: './public', default: 'index.ht
 
 server.listen (process.env.PORT or 8080), ->
   console.info "[%s] #{server.name} listening at #{server.url}", process.pid
-  setInterval sendLastSeconds(), 1*1000
+
+  sendLastSeconds = (seconds=1) ->
+    if connectedSockets.length
+      console.log millisNow = Math.round((+new Date % (24*60*60*1000))/100)
+      #chains.find({time24: {$gt: millisNow-(seconds*1000), $lt: millisNow}}).toArray (err, doc) ->
+      chains.find().limit(-1).skip(Math.round(Math.random()*65000)).toArray (err, doc) ->
+        console.error err if err
+        for socket in connectedSockets
+          socket.emit 'HI!', doc
+
+  setInterval sendLastSeconds, 1*1000

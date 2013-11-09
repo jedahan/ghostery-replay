@@ -26,7 +26,6 @@ findAndInsertIfNotFound = (host, cb) ->
             cb null, doc
 
 addChain = (chain) ->
-  console.log chain
   [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r] = chain
   obj =
     # Unique identifier for a page load
@@ -77,7 +76,7 @@ addChain = (chain) ->
     parentN: r
 
   # milliseconds in the day
-  obj.time24 = +obj.time % (24*60*60)
+  obj.time24 = +obj.time % (24*60*60*1000)
   findAndInsertIfNotFound obj.host, (err, ip) ->
     console.log err if err
     obj.dns = ip unless err
