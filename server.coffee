@@ -14,6 +14,9 @@ socketio = require 'socket.io'
 io = socketio.listen server
 connectedSockets = []
 
+# baudio
+baudio = require 'baudio'
+
 io.sockets.on 'connection', (socket) ->
   console.log 'we got a connection'
   connectedSockets.push socket
@@ -38,3 +41,18 @@ server.listen (process.env.PORT or 8080), ->
           socket.emit 'HI!', doc
 
   setInterval sendLastSeconds, 1*100
+
+
+playIP = (ip)->
+  # ip = '192.168.1.50'
+  notes = ip.split '.'
+
+  sounds = []
+  for note in notes 
+    n = 0;
+    b = baudio (t)->
+      x = Math.sin(t * (+note/255 * 20000) + Math.sin(n))
+      n+=Math.sin(+note/255 * 2000)        
+      return x
+    b.play()
+

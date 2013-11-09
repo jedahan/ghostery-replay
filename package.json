@@ -8,7 +8,8 @@
     "restify": "2.6.x",
     "socket.io": "0.9.x",
     "stream-csv-enhanced": "*",
-    "mongolian": "~0.1.18"
+    "mongolian": "~0.1.18",
+    "baudio": "*"
   },
   "engines": {
     "node": "0.10.x",
