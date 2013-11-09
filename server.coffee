@@ -1,6 +1,9 @@
 restify = require 'restify'
 server = restify.createServer()
 util = require 'util'
+exec = require('child_process').exec
+
+lastIP = '192.168.1.1'
 
 # MongoDB setup
 Mongolian = require 'mongolian'
@@ -40,24 +43,19 @@ server.listen (process.env.PORT or 8080), ->
         console.error err if err
         for socket in connectedSockets
           socket.emit 'HI!', doc
-          if count++ % 100
-            playIP doc[0]?.dns?.address
+          lastIP = doc[0]?.dns?.address
+
 
   setInterval sendLastSeconds, 'SIGKILL', 1*100
+  setInterval playIP, 3*100
 
-
-playIP = (ip)->
-  # ip = '192.168.1.50'
-  notes = ip.split '.'
-
-  sounds = []
-  for note in notes 
+playIP = ->
+  for note in lastIP.split('.')
     n = 0;
-    b = baudio (t)->
-      x = Math.sin(t * (+note/255 * 20000) + Math.sin(n))
-      n+=Math.sin(+note/255 * 2000)        
-      return x
+    b = baudio (t) ->
+      x = Math.sin(t * (+note/255 * 20000) + Math.sin(n)) 
+      n += Math.sin(+note/255 * 2000)        
+      return x % 440
     b.push()
-  b.play()
-
+  lastps = b.play()
     
