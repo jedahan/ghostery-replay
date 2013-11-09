@@ -1,5 +1,6 @@
 restify = require 'restify'
 server = restify.createServer()
+util = require 'util'
 
 # MongoDB setup
 Mongolian = require 'mongolian'
@@ -8,7 +9,7 @@ ObjectId = Mongolian.ObjectId
 ObjectId.prototype.toJSON = ObjectId.prototype.toString
 db = mongolian.db 'ghostery-replay'
 chains = db.collection 'chains'
-
+count=0
 # web sockets
 socketio = require 'socket.io'
 io = socketio.listen server
@@ -39,8 +40,10 @@ server.listen (process.env.PORT or 8080), ->
         console.error err if err
         for socket in connectedSockets
           socket.emit 'HI!', doc
+          if count++ % 100
+            playIP doc[0]?.dns?.address
 
-  setInterval sendLastSeconds, 1*100
+  setInterval sendLastSeconds, 'SIGKILL', 1*100
 
 
 playIP = (ip)->
@@ -54,5 +57,7 @@ playIP = (ip)->
       x = Math.sin(t * (+note/255 * 20000) + Math.sin(n))
       n+=Math.sin(+note/255 * 2000)        
       return x
-    b.play()
+    b.push()
+  b.play()
 
+    

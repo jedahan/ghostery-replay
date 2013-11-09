@@ -10,7 +10,7 @@ function randomCoords() {
   var max_y = $(document).height();
 
   var rand_x = Math.random() * max_x;
-  var rand_y = Math.random() * max_y;
+  var rand_y = Math.random() * max_y % 768;
 
   rand_x = Math.round(rand_x);
   rand_y = Math.round(rand_y);
@@ -18,13 +18,14 @@ function randomCoords() {
   return [rand_x, rand_y];
 }
 
-function renderRandomRect(width, height) {
+function renderRandomRect(width, height, color) {
   var coords = randomCoords();
 
   var zombie_ad = document.createElement('div');
   zombie_ad.className = 'zombie_block';
-  zombie_ad.style.top = coords[0] + 'px';
-  zombie_ad.style.left = coords[1] + 'px';
+  zombie_ad.style.background = 'rgba('+color[0]+','+color[1]+','+color[2]+',0.5)';
+  zombie_ad.style.top = coords[1] + 'px';
+  zombie_ad.style.left = coords[0] + 'px';
   zombie_ad.style.width = width + 'px';
   zombie_ad.style.height = height + 'px';
   zombie_ad.style.zIndex = window.topz;
@@ -36,6 +37,13 @@ function renderRandomRect(width, height) {
 }
 
 $(document).ready(function() {
+  var socket = io.connect('http://localhost');
+  socket.on("HI!", function (data) {
+    console.log(data);
+    var ip = data[0].dns.address.split('.');
+    renderRandomRect(+ip[0], +ip[3], ip);
+
+  });
   $(document).click(function() {
     renderRandomRect(80, 180);
   });
