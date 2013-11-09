@@ -11,21 +11,22 @@ db = mongolian.db 'ghostery-replay'
 chains = db.collection 'chains'
 ips = db.collection 'ips'
 
-findAndInsertIfNotFound = (host) ->
+findAndInsertIfNotFound = (host, cb) ->
   ips.findOne {host}, (err, body) ->
     console.error err if err
     if body?
-      return body
+      cb null, body
     else
       dns.lookup host, (err, address, family) ->
         if err
-          return null
+          cb err
         else
           ips.insert {host, address}, (err, doc) ->
             console.error err if err
-            return doc
+            cb null, doc
 
 addChain = (chain) ->
+  console.log chain
   [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r] = chain
   obj =
     # Unique identifier for a page load
@@ -76,19 +77,15 @@ addChain = (chain) ->
     parentN: r
 
   # milliseconds in the day
-  obj.time24 = +new Date(obj.time) % (24*60*60)
-  console.log obj.dns = findAndInsertIfNotFound(obj.host)
-  chains.insert obj, (err, doc) ->
-    console.error err if err
-    console.log doc
+  obj.time24 = +obj.time % (24*60*60)
+  findAndInsertIfNotFound obj.host, (err, ip) ->
+    console.log err if err
+    obj.dns = ip unless err
+
+    chains.insert obj, (err, doc) ->
+      console.error err if err
 
 csv().from.path(__dirname + "/sample.tsv", {delimiter: "\t", escape: "\""})
-.transform((row) ->
-  row.unshift row.pop()
-  row )
-.on("record", (row, index) -> 
-    addChain row
-    console.log "#" + index + " " + JSON.stringify(row)
-)
+.on("record", (row, index) ->  addChain row )
 .on("close", (count) -> console.log "Number of lines: " + count)
 .on("error", (error) -> console.log error.message)
